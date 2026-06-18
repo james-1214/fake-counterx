@@ -1,0 +1,44 @@
+// import axios from "axios";
+
+// //export default axios.create({
+//   // baseURL: "http://localhost:8080/api",
+// const api = axios.create({
+//   baseURL: 'http://localhost:8082/api',
+//  headers: {
+//     "Content-Type": "application/json",
+//   },
+// });
+
+
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "http://localhost:8082/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Attach JWT token automatically on every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("authToken");
+  if (token) {
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Redirect to login on 401 (token expired)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+      window.location.href = "/admin-login";
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
